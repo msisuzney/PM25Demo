@@ -43,7 +43,7 @@ public class SendPMDataThread extends Thread {
                 e.printStackTrace();
             }
             try {
-                Thread.sleep(3000);
+                Thread.sleep(20 * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

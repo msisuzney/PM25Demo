@@ -16,4 +16,8 @@ public class Constants {
     public static final String sDataFormat = "PMClient,port:";
     public static final String sSendContent = sDataFormat + sReceivePMPort;
     public static final String sStopContent = "PMClient,stop";
+
+    public static final String isRegister = "isRegister";
+    public static final String msisuzney = "msisuzney";
+
 }
