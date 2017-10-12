@@ -15,19 +15,11 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String multicastHost = "224.0.0.1";//多播地址
-    private static final int multicastHostPort = 8003;//多播地址端口
-
-    private static final int sReceivePMPort = 7930;
-    private static final String sDataFormat = "PMClient,port:";
-    private static final String sSendContent = sDataFormat + sReceivePMPort;
-    private static final String sStopContent = "PMClient,stop";
-
-    /*发送广播端的socket*/
+    //发送广播的socket
     private MulticastSocket ms;
-    /*发送广播的按钮*/
 
     private TextView pm1_0;
     private TextView pm2_5;
@@ -76,17 +68,15 @@ public class MainActivity extends AppCompatActivity {
                 DatagramPacket dataPacket = null;
                 try {
                     ms.setTimeToLive(4);
-                    byte[] data = sStopContent.getBytes();
+                    byte[] data = Constants.sStopContent.getBytes();
                     //224.0.0.1为广播地址
-                    InetAddress address = InetAddress.getByName(multicastHost);
-                    //判断该地址是不是广播类型的地址
-//                        Log.d(TAG, "address.isMulticastAddress() " + address
-//                                .isMulticastAddress());
+                    InetAddress address = InetAddress.getByName(Constants.multicastHost);
+
                     dataPacket = new DatagramPacket(data, data.length, address,
-                            multicastHostPort);
+                            Constants.multicastHostPort);
                     ms.send(dataPacket);
                     Log.d(TAG, "send stop finish");
-//                        ms.close();
+                    ms.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -98,21 +88,19 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                //发送的数据包，局网内的所有地址都可以收到该数据包
+                //发送的数据包
                 DatagramPacket dataPacket = null;
                 try {
                     ms.setTimeToLive(4);
-                    byte[] data = sSendContent.getBytes();
+                    byte[] data = Constants.sSendContent.getBytes();
                     //224.0.0.1为广播地址
-                    InetAddress address = InetAddress.getByName(multicastHost);
-                    //判断该地址是不是广播类型的地址
-//                        Log.d(TAG, "address.isMulticastAddress() " + address
-//                                .isMulticastAddress());
+                    InetAddress address = InetAddress.getByName(Constants.multicastHost);
+
                     dataPacket = new DatagramPacket(data, data.length, address,
-                            multicastHostPort);
+                            Constants.multicastHostPort);
                     ms.send(dataPacket);
                     Log.d(TAG, "send finish");
-//                        ms.close();
+                    ms.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -121,10 +109,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterPMData();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        ms.close();
-
+//        ms.close();
     }
 
     private class ReceivePMDataThread extends Thread {
@@ -139,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
         private void init() {
             try {
-                socket = new DatagramSocket(sReceivePMPort);
+                socket = new DatagramSocket(Constants.sReceivePMPort);
                 dp_receive = new DatagramPacket(buf, 1024);
             } catch (SocketException e) {
                 e.printStackTrace();

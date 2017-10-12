@@ -13,7 +13,6 @@ import java.net.SocketException;
  * Date: 2017/7/12.
  * Time: 16:27.
  */
-
 public class SendPMDataThread extends Thread {
     private static final String TAG = SendPMDataThread.class.getSimpleName();
     private InetAddress address;
@@ -34,11 +33,12 @@ public class SendPMDataThread extends Thread {
     @Override
     public void run() {
         while (true) {
-            Log.d(TAG, Thread.currentThread() + " run");
+            Log.d(TAG, Thread.currentThread() + " send start");
             byte[] bytes = PMDataHolder.getData().getBytes();
             DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length, address, port);
             try {
                 ds.send(datagramPacket);
+                Log.d(TAG, "send finish");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -47,7 +47,9 @@ public class SendPMDataThread extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (!MulticastThread.addresses.containsKey(address.toString())) {
+            //判断hashmap还有自己对应的client
+            //的ip吗,如果没有说明被移除了，结束自己不发数据了
+            if (!MulticastThread.addresses.contains(address.toString())) {
                 datagramPacket = null;
                 ds = null;
                 return;

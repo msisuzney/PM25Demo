@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 readUartBuffer(uart);
             } catch (IOException e) {
-                Log.w(TAG, "Unable to access UART device", e);
+                Log.d(TAG, "Unable to access UART device", e);
             }
             // Continue listening for more interrupts
             return true;
@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onUartDeviceError(UartDevice uart, int error) {
-            Log.w(TAG, uart + ": Error event " + error);
+            Log.d(TAG, uart + ": Error event " + error);
         }
     };
 
@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void readUartBuffer(UartDevice uart) throws IOException {
+//        Log.d(TAG,"readUartBuffer");
         uart.read(buffer, buffer.length);
         if (buffer[0] == 66 && buffer[1] == 77) {
             int pm1_0 = (buffer[4] << 8) | buffer[5];
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         // Begin listening for interrupt events
         try {
+            Log.d(TAG, "onStart");
             uartDevice.registerUartDeviceCallback(mUartCallback);
         } catch (IOException e) {
             e.printStackTrace();
@@ -108,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         // Interrupt events no longer necessary
         uartDevice.unregisterUartDeviceCallback(mUartCallback);
     }
-
 
 
 }
