@@ -6,6 +6,27 @@
     android:orientation="vertical"
     >
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.msisuzney.pm25phone.DashboardView
+            android:layout_margin="10dp"
+            android:id="@+id/pm1_0View"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="100dp"/>
+
+        <com.msisuzney.pm25phone.DashboardView
+            android:layout_margin="10dp"
+            android:id="@+id/pm2_5View"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="100dp"/>
+
+    </LinearLayout>
+
+
     <Button
         android:id="@+id/send"
         android:layout_width="match_parent"

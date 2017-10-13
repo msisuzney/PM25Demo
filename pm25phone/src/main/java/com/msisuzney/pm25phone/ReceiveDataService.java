@@ -5,10 +5,12 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -21,21 +23,6 @@ public class ReceiveDataService extends Service {
     private Notification notification;
     private Notification.Builder builder;
     private ReceivePMDataThread receiveThread;
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            String data = (String) msg.obj;
-            Log.d(TAG, data);
-            builder.setWhen(System.currentTimeMillis());
-            builder.setContentText(data);
-            Notification notification = builder.build();
-            Intent intent = new Intent(ReceiveDataService.this, MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(ReceiveDataService.this,
-                    0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.setContentIntent(pendingIntent);
-            startForeground(12, notification);
-        }
-    };
     private DatagramSocket socket;
 
     public ReceiveDataService() {
@@ -58,6 +45,23 @@ public class ReceiveDataService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(PMDataMessageEvent event) {
+        String pm1_0str = "PM1.0: " + event.getPm1_0() + " μg/m3";
+        String pm2_5str = "PM2.5: " + event.getPm2_5() + " μg/m3";
+        String data = pm1_0str + " , " + pm2_5str;
+        Log.d(TAG, data);
+        builder.setWhen(System.currentTimeMillis());
+        builder.setContentText(data);
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        Notification notification = builder.build();
+        Intent intent = new Intent(ReceiveDataService.this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(ReceiveDataService.this,
+                0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+        startForeground(12, notification);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -68,11 +72,14 @@ public class ReceiveDataService extends Service {
         builder.setSmallIcon(R.mipmap.ic_launcher);
         builder.setWhen(System.currentTimeMillis());
         notification = builder.build();
+        EventBus.getDefault().register(this);
     }
+
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         if (socket != null) {
             socket.close();
 //            socket = null;
@@ -115,13 +122,12 @@ public class ReceiveDataService extends Service {
                     String[] pm = new String(dp_receive.getData(), 0,
                             dp_receive.getLength()).split(",");
 //                    Log.d(TAG, pm[0] + " ," + pm[1]);
-                    String pm1_0str = "PM1.0: " + pm[0] + " μg/m3";
-                    String pm2_5str = "PM2.5: " + pm[1] + " μg/m3";
+//                    String pm1_0str = "PM1.0: " + pm[0] + " μg/m3";
+//                    String pm2_5str = "PM2.5: " + pm[1] + " μg/m3";
 
-                    Message message = Message.obtain(mHandler);
-                    String data = pm1_0str + " , " + pm2_5str;
-                    message.obj = data;
-                    mHandler.sendMessage(message);
+//                    String data = pm1_0str + " , " + pm2_5str;
+                    EventBus.getDefault().post(new PMDataMessageEvent(Integer.valueOf(pm[0]),
+                            Integer.valueOf(pm[1])));
                 } catch (IOException e) {
                     e.printStackTrace();
 
