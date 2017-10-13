@@ -1,10 +1,13 @@
 package com.msisuzney.pm25phone;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -20,10 +23,12 @@ import java.net.SocketException;
 public class ReceiveDataService extends Service {
 
     private static final String TAG = "ReceiveDataService";
+    private NotificationManager manager;
     private Notification notification;
     private Notification.Builder builder;
     private ReceivePMDataThread receiveThread;
     private DatagramSocket socket;
+    private SharedPreferences sp;
 
     public ReceiveDataService() {
 
@@ -60,6 +65,36 @@ public class ReceiveDataService extends Service {
                 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
         startForeground(12, notification);
+
+        int criticalVal = sp.getInt(Constants.criticalVal, -1);
+        if (event.getPm2_5() >= criticalVal && !sp.getBoolean(Constants.notified, true)) {
+            showNotification(criticalVal);
+            sp.edit().putBoolean(Constants.notified, true).apply();
+        }
+    }
+
+    private void showNotification(int criticalVal) {
+        Log.d(TAG, "showNotification");
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        String title = "PM2.5已超临界值" + criticalVal + "μg/m3";
+        String content = "请做好防护措施!";
+        builder.setContentTitle(title);
+        builder.setContentText(content);
+        builder.setWhen(System.currentTimeMillis());
+
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pending = PendingIntent.getActivity(this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setFullScreenIntent(pending, true);
+        builder.setLights(Color.RED, 500, 300);
+        builder.setContentIntent(pending);
+        builder.setAutoCancel(true);
+        Notification n = builder.build();
+        n.defaults |= Notification.DEFAULT_SOUND;//使用默认的声音
+        n.defaults |= Notification.DEFAULT_VIBRATE;//使用默认的震动
+
+        manager.notify(123, n);
     }
 
     @Override
@@ -72,7 +107,11 @@ public class ReceiveDataService extends Service {
         builder.setSmallIcon(R.mipmap.ic_launcher);
         builder.setWhen(System.currentTimeMillis());
         notification = builder.build();
+        manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        sp = getSharedPreferences(Constants.msisuzney, MODE_PRIVATE);
+
         EventBus.getDefault().register(this);
+
     }
 
 

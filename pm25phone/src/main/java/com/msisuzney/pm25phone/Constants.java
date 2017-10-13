@@ -18,7 +18,10 @@ public class Constants {
     public static final String sStopContent = "PMClient,stop";
 
     public static final String isRegister = "isRegister";
-    public static final String msisuzney = "msisuzney";
 
+    public static final String msisuzney = "msisuzney";
+    public static final String criticalVal = "criticalVal";
+    public static final String notified = "notified";
+    public static final int default_criticalVal = 100;
 
 }

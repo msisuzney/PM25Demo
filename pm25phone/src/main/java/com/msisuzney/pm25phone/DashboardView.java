@@ -30,11 +30,11 @@ import java.util.Locale;
 public class DashboardView extends View {
 
     private int mRadius; // 画布边缘半径（去除padding后的半径）
-    private int mStartAngle = 150; // 起始角度
-    private int mSweepAngle = 240; // 绘制角度
+    private int mStartAngle = 180; // 起始角度
+    private int mSweepAngle = 180; // 绘制角度
     private int mMin = 0; // 最小值
     private int mMax = 350; // 最大值
-    private String mHeaderText = "BETA"; // 表头
+    private String mHeaderText = ""; // 表头
     private int mCreditValue = 0; // 信用分
     private int mSparkleWidth; // 亮点宽度
     private int mProgressWidth; // 进度圆弧宽度
@@ -106,10 +106,26 @@ public class DashboardView extends View {
         mLength1 = mPadding + mSparkleWidth / 2f + dp2px(8);
         mLength2 = mLength1 + mProgressWidth + dp2px(4);
 
-        int width = resolveSize(dp2px(220), widthMeasureSpec);
-        mRadius = (width - mPadding * 2) / 2;
+        int heightSpecSize = MeasureSpec.getSize(heightMeasureSpec);
+        int heightSpecMode = MeasureSpec.getMode(heightMeasureSpec);
+        int widthSpecSize = MeasureSpec.getSize(widthMeasureSpec);
+        int widthSpecMode = MeasureSpec.getMode(widthMeasureSpec);
 
-        setMeasuredDimension(width, width - dp2px(50));
+        int height;
+        int width;
+        if (heightSpecMode == MeasureSpec.AT_MOST) {
+            height = dp2px(80);
+        } else {
+            height = heightSpecSize;
+        }
+        if (widthSpecMode == MeasureSpec.AT_MOST) {
+            width = dp2px(110);
+        } else {
+            width = widthSpecSize;
+        }
+
+        mRadius = (width - mPadding * 2) / 2;
+        setMeasuredDimension(width, height);
 
         mCenterX = mCenterY = getMeasuredWidth() / 2f;
         mRectFProgressArc.set(
@@ -208,7 +224,7 @@ public class DashboardView extends View {
          * 画实时度数值
          */
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setTextSize(sp2px(35));
+        mPaint.setTextSize(sp2px(12));
         mPaint.setTextAlign(Paint.Align.CENTER);
         String value = String.valueOf(mCreditValue);
         canvas.drawText(value, mCenterX, mCenterY, mPaint);
@@ -217,14 +233,14 @@ public class DashboardView extends View {
          * 画信用描述
          */
         mPaint.setTextSize(sp2px(14));
-        canvas.drawText(calculateCreditDescription(), mCenterX, mCenterY - dp2px(40), mPaint);
+        canvas.drawText(calculateCreditDescription(), mCenterX, mCenterY - dp2px(15), mPaint);
 
         /**
          * 画表头
          */
         mPaint.setAlpha(160);
-        mPaint.setTextSize(sp2px(14));
-        canvas.drawText(mHeaderText, mCenterX, mCenterY - dp2px(65), mPaint);
+        mPaint.setTextSize(sp2px(10));
+        canvas.drawText(mHeaderText, mCenterX, mCenterY - dp2px(32), mPaint);
     }
 
     private int dp2px(int dp) {
